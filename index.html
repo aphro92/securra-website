@@ -356,6 +356,7 @@
     <button type="submit">Get early access &rarr;</button>
   </form>
   <div id="success-msg"></div>
+  <p class="hero-caption" id="hero-caption">Free for the first <b>50 companies</b> &middot; No credit card required</p>
 </section>
 
 <!-- PROOF BAR -->
@@ -561,27 +562,40 @@
 </footer>
 
 <script>
+  var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz4FPtF1JVCFhiaATWFnAgnYdbTaq0nTlpl81WU81-a4h5uR2wqJNwV_tzamTdSIB5R/exec';
+
   function handleWaitlist(e) {
     e.preventDefault();
     var email = document.getElementById('email-input').value.trim();
     if (!email) return;
 
-    // TODO: connect your waitlist backend here
-    // Option A — Tally.so webhook: fetch('https://tally.so/r/YOUR_FORM_ID', {...})
-    // Option B — Airtable:
-    //   fetch('https://api.airtable.com/v0/YOUR_BASE/Waitlist', {
-    //     method: 'POST',
-    //     headers: { 'Authorization': 'Bearer YOUR_KEY', 'Content-Type': 'application/json' },
-    //     body: JSON.stringify({ fields: { Email: email, Date: new Date().toISOString() } })
-    //   });
+    var btn = document.querySelector('.waitlist-form button');
+    btn.disabled = true;
+    btn.textContent = 'Saving…';
 
-    document.querySelector('.waitlist-form').style.display = 'none';
-    var cap = document.getElementById('hero-caption');
-    if (cap) cap.style.display = 'none';
-    var msg = document.getElementById('success-msg');
-    msg.style.display = 'block';
-    msg.textContent = "Thanks! We'll reach out to " + email + " when early access opens.";
-    console.log('Waitlist signup:', email);
+    fetch(SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email, source: 'hero-form' })
+    })
+    .then(function() {
+      document.querySelector('.waitlist-form').style.display = 'none';
+      var cap = document.getElementById('hero-caption');
+      if (cap) cap.style.display = 'none';
+      var msg = document.getElementById('success-msg');
+      msg.style.display = 'block';
+      msg.textContent = "🎉 You're on the list! We'll reach out to " + email + " when early access opens.";
+    })
+    .catch(function() {
+      btn.disabled = false;
+      btn.textContent = 'Get early access →';
+      var msg = document.getElementById('success-msg');
+      msg.style.display = 'block';
+      msg.style.background = '#fde8e8';
+      msg.style.color = '#9b1c1c';
+      msg.textContent = 'Something went wrong. Please try again.';
+    });
   }
 
   var observer = new IntersectionObserver(function(entries) {
