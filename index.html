@@ -562,8 +562,6 @@
 </footer>
 
 <script>
-  var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwL0Z6K8pntyywG5X3JlAo4mtQUM3p5MiEP6U-hj7jm1p8lvDXpo9BRv17oUIudy0fV/exec';
-
   function handleWaitlist(e) {
     e.preventDefault();
     var email = document.getElementById('email-input').value.trim();
@@ -573,19 +571,28 @@
     btn.disabled = true;
     btn.textContent = 'Saving…';
 
-    fetch(SCRIPT_URL, {
+    fetch('https://api.web3forms.com/submit', {
       method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify({ email: email, source: 'hero-form' })
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        access_key: '471fa5c3-d96b-4803-8559-3525edd0c4f8',
+        subject: 'New Securra early access signup',
+        email: email,
+        from_name: 'Securra Waitlist'
+      })
     })
-    .then(function() {
-      document.querySelector('.waitlist-form').style.display = 'none';
-      var cap = document.getElementById('hero-caption');
-      if (cap) cap.style.display = 'none';
-      var msg = document.getElementById('success-msg');
-      msg.style.display = 'block';
-      msg.textContent = "🎉 You're on the list! We'll reach out to " + email + " when early access opens.";
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+      if (data.success) {
+        document.querySelector('.waitlist-form').style.display = 'none';
+        var cap = document.getElementById('hero-caption');
+        if (cap) cap.style.display = 'none';
+        var msg = document.getElementById('success-msg');
+        msg.style.display = 'block';
+        msg.textContent = "🎉 You're on the list! We'll reach out to " + email + " when early access opens.";
+      } else {
+        throw new Error('Submission failed');
+      }
     })
     .catch(function() {
       btn.disabled = false;
